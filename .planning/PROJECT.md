@@ -4,7 +4,7 @@
 
 Sistema pessoal de gestão fitness para uma única pessoa (o próprio dono do projeto), com foco em **dieta flexível** (IIFYM): registrar o que comeu pelo WhatsApp e saber na hora quanto falta de cada macronutriente no dia. Inclui registro de treinos (musculação e cardio), suplementação com controle de estoque, peso/medidas/fotos de progresso, relatório semanal e um dashboard web simples para visualização.
 
-A interface principal é o **WhatsApp via Hermes** (bot já configurado pelo usuário, que consome o sistema como servidor MCP). Nenhum bot é construído neste projeto — o produto é o **servidor MCP + banco de dados + dashboard web leve**.
+A interface principal é o **WhatsApp via Hermes** (bot já configurado pelo usuário, que consome o sistema como servidor MCP). Nenhum bot é construído neste projeto — o produto é o **servidor MCP + banco de dados + dashboard web leve**, hospedados na **VPS pessoal do usuário** (que já roda outros projetos dele), com deploy automático via GitHub a cada merge na `main`.
 
 ## Core Value
 
@@ -51,14 +51,15 @@ A qualquer momento, mandar uma mensagem no WhatsApp ("almocei arroz, feijão e f
 - Usuário brasileiro: tabela **TACO** (Tabela Brasileira de Composição de Alimentos, ~600 alimentos in natura, domínio público) é a fonte prioritária do catálogo; **Open Food Facts** (API gratuita, busca por código de barras e nome, muitos produtos BR) cobre industrializados.
 - O Hermes (runtime de agente do usuário, já conectado ao WhatsApp) é o **cliente MCP**. A interpretação de linguagem natural das mensagens ("2 colheres de arroz") fica a cargo do LLM do Hermes; o MCP expõe ferramentas semânticas (registrar_refeicao, consultar_saldo, etc.) — não precisa de parser próprio.
 - Projeto greenfield, pasta vazia, repositório git recém-inicializado.
-- Dados pessoais e sensíveis (peso, fotos do corpo): tudo local, sem multiusuário.
+- Dados pessoais e sensíveis (peso, fotos do corpo): tudo na VPS pessoal do usuário — considerada "local suficiente" pelo dono — sem multiusuário.
 
 ## Constraints
 
 - **Simplicidade**: requisito explícito do usuário — manter o sistema simples de operar e de manter; evitar dependências desnecessárias
-- **Interface**: núcleo obrigatoriamente exposto como servidor MCP (ferramentas) para consumo pelo Hermes
+- **Interface**: núcleo obrigatoriamente exposto como servidor MCP (ferramentas) para consumo pelo Hermes — agora via HTTP na VPS, não mais stdio local
+- **Deploy**: repositório no GitHub; merge na `main` dispara deploy automático na VPS (GitHub Actions + SSH)
 - **Região**: base de alimentos prioriza dados brasileiros (TACO / produtos BR no Open Food Facts)
-- **Privacidade**: dados e fotos ficam locais; sem nuvem de terceiros para dados pessoais
+- **Privacidade**: dados e fotos ficam na VPS pessoal do usuário; sem nuvem de terceiros para dados pessoais
 
 ## Key Decisions
 
@@ -71,6 +72,7 @@ A qualquer momento, mandar uma mensagem no WhatsApp ("almocei arroz, feijão e f
 | Musculação: data + grupos musculares, sem duração | Simplicidade; detalhe (séries/reps/carga) fica pra v2 | — Pending |
 | Suplementação com controle de estoque e aviso de reposição | Escolha explícita do usuário | — Pending |
 | Fases (cutting/bulk) trocam todas as metas; fim de fase cobra próxima definição | Evita assumir metas silenciosamente | — Pending |
+| Hospedagem integral na VPS pessoal (MCP exposto via Streamable HTTP + dashboard no mesmo servidor; Hermes conecta por URL) | A VPS já roda outros projetos do usuário e é considerada "local suficiente"; habilita deploy contínuo e acesso de qualquer lugar | — Pending |
 
 ## Evolution
 

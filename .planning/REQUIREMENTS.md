@@ -60,10 +60,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Núcleo Técnico
 
-- [ ] **INFRA-01**: Servidor MCP com ferramentas semânticas de domínio consumíveis pelo Hermes; spike de transporte (stdio vs Streamable HTTP) e era do SDK (v2 vs v1) no início
+- [ ] **INFRA-01**: Servidor MCP com ferramentas semânticas de domínio, exposto via Streamable HTTP na VPS e consumido pelo Hermes por URL, com endpoints protegidos por token; verificar a era do SDK (v2 vs v1) que o Hermes negocia no primeiro contato
 - [ ] **INFRA-02**: SQLite local em modo WAL; migrations versionadas rodadas no boot com backup automático antes de cada migration
 - [ ] **INFRA-03**: Datas gravadas na escrita como `timestamp_utc` + `data_local` (America/Sao_Paulo); saldo derivado em leitura por uma única implementação
-- [ ] **INFRA-04**: Dados e fotos 100% locais (nada de nuvem para dados pessoais)
+- [ ] **INFRA-04**: Dados e fotos 100% na VPS pessoal do usuário (sem nuvem de terceiros)
+- [ ] **INFRA-05**: Merge na `main` no GitHub dispara deploy automático na VPS (GitHub Actions + SSH): a versão nova do serviço sobe sem intervenção manual
 
 ## v2 Requirements
 
@@ -119,6 +120,7 @@ Which phases cover which requirements. Updated during roadmap creation (2026-09-
 | INFRA-02 | Phase 1 | Pending |
 | INFRA-03 | Phase 1 | Pending |
 | INFRA-04 | Phase 1 | Pending |
+| INFRA-05 | Phase 1 | Pending |
 | ALIM-02 | Phase 2 | Pending |
 | ALIM-03 | Phase 2 | Pending |
 | ALIM-04 | Phase 2 | Pending |
@@ -139,10 +141,10 @@ Which phases cover which requirements. Updated during roadmap creation (2026-09-
 | DASH-02 | Phase 5 | Pending |
 
 **Coverage:**
-- v1 requirements: 31 total
-- Mapped to phases: 31
+- v1 requirements: 32 total
+- Mapped to phases: 32
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-09-23*
-*Last updated: 2026-09-23 — traceability preenchida pelo roadmap (5 fases, cobertura 31/31)*
+*Last updated: 2026-09-23 — hospedagem na VPS + deploy contínuo (INFRA-01/04 ajustados, INFRA-05 adicionado; cobertura 32/32)*

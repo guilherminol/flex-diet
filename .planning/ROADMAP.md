@@ -2,9 +2,9 @@
 
 ## Overview
 
-O caminho do v1.0 vai do núcleo confiável até o uso diário completo. A Fase 1 entrega o loop de valor central — "registrei o que comi → recebi o saldo restante de macros" — sobre um servidor MCP + SQLite local com catálogo TACO semeado, já nascendo com os contratos que protegem a confiança nos números (eco de item/gramas/fonte, correção trivial, idempotência, datas locais, backup pré-migration). A Fase 2 elimina o atrito dos industrializados com Open Food Facts e cache automático. A Fase 3 cobre a rotina: fases de cutting/bulk com metas históricas, treinos simples e presets. A Fase 4 traz o acompanhamento do corpo (peso, medidas, fotos). A Fase 5 fecha o ciclo com suplementação e estoque, relatório semanal e dashboard web read-only. Cada fase é uma capacidade verificável de ponta a ponta; do fim da Fase 2 em diante o usuário já consegue viver no sistema.
+O caminho do v1.0 vai do núcleo confiável até o uso diário completo. A Fase 1 entrega o loop de valor central — "registrei o que comi → recebi o saldo restante de macros" — sobre um servidor MCP + SQLite com catálogo TACO semeado, rodando na VPS pessoal do usuário, já nascendo com os contratos que protegem a confiança nos números (eco de item/gramas/fonte, correção trivial, idempotência, datas locais, backup pré-migration). A Fase 2 elimina o atrito dos industrializados com Open Food Facts e cache automático. A Fase 3 cobre a rotina: fases de cutting/bulk com metas históricas, treinos simples e presets. A Fase 4 traz o acompanhamento do corpo (peso, medidas, fotos). A Fase 5 fecha o ciclo com suplementação e estoque, relatório semanal e dashboard web read-only. Cada fase é uma capacidade verificável de ponta a ponta; do fim da Fase 2 em diante o usuário já consegue viver no sistema.
 
-**Cobertura:** 31/31 requisitos v1 mapeados — nenhuma exigência órfã, nenhuma duplicada. Rastreamento completo em `.planning/REQUIREMENTS.md` (seção Traceability).
+**Cobertura:** 32/32 requisitos v1 mapeados — nenhuma exigência órfã, nenhuma duplicada. Rastreamento completo em `.planning/REQUIREMENTS.md` (seção Traceability).
 
 ## Phases
 
@@ -14,7 +14,7 @@ O caminho do v1.0 vai do núcleo confiável até o uso diário completo. A Fase 
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Núcleo confiável — banco, catálogo TACO e loop de registro com saldo** - Servidor MCP + SQLite WAL + catálogo TACO semeado e o circuito "registrei → saldo restante" com correção e idempotência de primeira classe
+- [ ] **Phase 1: Núcleo confiável — banco, catálogo TACO e loop de registro com saldo** - Servidor MCP (Streamable HTTP na VPS) + SQLite WAL + catálogo TACO semeado e o circuito "registrei → saldo restante" com correção e idempotência de primeira classe, publicado por deploy contínuo
 - [ ] **Phase 2: Open Food Facts + cache do catálogo** - Produtos industrializados por código de barras ou nome, cache automático no catálogo e estimativa LLM salvável
 - [ ] **Phase 3: Rotina — fases, treinos e refeições padrão** - Fases de cutting/bulk/manutenção com metas como histórico por data, treino simples (musculação + cardio) e presets de refeição
 - [ ] **Phase 4: Corpo — peso, medidas e fotos** - Registro de peso e medidas e fotos de progresso arquivadas por dia, prontas para linha do tempo
@@ -23,16 +23,16 @@ Decimal phases appear between their surrounding integers in numeric order.
 ## Phase Details
 
 ### Phase 1: Núcleo confiável — banco, catálogo TACO e loop de registro com saldo
-**Goal**: O loop de valor central funciona de ponta a ponta via ferramentas MCP — registrar o que comeu debita os macros e devolve o saldo restante do dia, com correção trivial e números em que se pode confiar desde o primeiro dia
+**Goal**: O loop de valor central funciona de ponta a ponta via ferramentas MCP — registrar o que comeu debita os macros e devolve o saldo restante do dia, com correção trivial, números em que se pode confiar desde o primeiro dia e deploy automático na VPS a cada merge
 **Mode:** mvp
 **Depends on**: Nothing (first phase)
-**Requirements**: INFRA-01, INFRA-02, INFRA-03, INFRA-04, ALIM-01, ALIM-06, REG-01, REG-02, REG-03, REG-04, REG-05, REG-06, META-01
+**Requirements**: INFRA-01, INFRA-02, INFRA-03, INFRA-04, INFRA-05, ALIM-01, ALIM-06, REG-01, REG-02, REG-03, REG-04, REG-05, REG-06, META-01
 **Success Criteria** (what must be TRUE):
   1. Registrar uma refeição com alimentos do catálogo TACO debita calorias e macros, e a resposta traz item + gramas + fonte (TACO) + saldo restante do dia (calorias, proteína, carbo, gordura)
   2. Correção é trivial e confiável: editar ou apagar um registro reflete no saldo na hora, "repetir almoço de ontem" reloga a refeição, registro retroativo ("ontem jantei X") cai no dia correto America/Sao_Paulo e reenvio da mesma mensagem não duplica o registro
   3. Buscar alimento no catálogo retorna valores por 100g e as equivalências de medidas caseiras em gramas; o seed TACO passa no teste de sanidade (banana ≈ 89 kcal/100g — se vier ~372, é kJ)
   4. Ajustar as metas do dia por mensagem ("meta 1800kcal") muda o saldo restante imediatamente
-  5. Fundação técnica verificável: servidor MCP consumível pelo Hermes (spike de transporte stdio vs Streamable HTTP e SDK v2 vs v1 resolvido no início), SQLite em WAL com migrations versionadas + backup automático antes de cada migration, datas gravadas como `timestamp_utc` + `data_local`, e dados/fotos 100% locais
+  5. Fundação técnica verificável: servidor MCP exposto via Streamable HTTP na VPS e consumível pelo Hermes por URL com endpoints protegidos por token (era do SDK v2 vs v1 verificada no primeiro contato, com fallback documentado p/ v1), SQLite em WAL com migrations versionadas + backup automático antes de cada migration, datas gravadas como `timestamp_utc` + `data_local`, e deploy automático funcionando — merge na `main` publica a versão nova na VPS via GitHub Actions
 **Plans**: TBD
 
 ### Phase 2: Open Food Facts + cache do catálogo
@@ -71,7 +71,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: TBD
 
 ### Phase 5: Insights — suplementos, relatório semanal e dashboard
-**Goal**: O sistema fecha o ciclo: suplementos sob controle de estoque com aviso de reposição, relatório semanal no WhatsApp e um dashboard web local para ver tudo de relance
+**Goal**: O sistema fecha o ciclo: suplementos sob controle de estoque com aviso de reposição, relatório semanal no WhatsApp e um dashboard web na VPS para ver tudo de relance
 **Mode:** mvp
 **Depends on**: Phase 1, Phase 3, Phase 4
 **Requirements**: SUPLE-01, SUPLE-02, RELAT-02, DASH-01, DASH-02
@@ -79,7 +79,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. Marcar o checklist diário de suplementos (creatina, whey, vitaminas...) registra o uso e mostra a aderência da semana
   2. O estoque de cada suplemento é movido por ledger de eventos (uso/reposição/ajuste) e o sistema avisa quantos dias restam de suprimento quando o pote está acabando
   3. O relatório semanal (payload gerado pelo MCP; envio é feito pelo Hermes) traz aderência de macros por dia — dias sem log aparecem como "sem registro", nunca 0% — mais treinos da semana e suplementos, cada dia contra a meta vigente naquele dia
-  4. O dashboard web local read-only mostra gráficos do dia/semana (macros, peso, treinos) com o mesmo saldo calculado pelo núcleo que responde no WhatsApp
+  4. O dashboard web (na VPS) read-only mostra gráficos do dia/semana (macros, peso, treinos) com o mesmo saldo calculado pelo núcleo que responde no WhatsApp
   5. A linha do tempo de fotos de progresso é visível no dashboard junto da evolução de peso/medidas
 **Plans**: TBD
 **UI hint**: yes
