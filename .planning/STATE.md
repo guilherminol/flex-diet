@@ -1,12 +1,19 @@
 ---
-gsd_state_version: '1.0'  # placeholder; syncStateFrontmatter overwrites on first state.* call
+gsd_state_version: "1.0"
+milestone: v1.0
+current_phase: 1
+current_phase_name: Núcleo confiável — banco, catálogo TACO e loop de registro com saldo
 status: planning
+stopped_at: Phase 1 context gathered
+last_updated: "2026-09-23T19:59:37.243Z"
+last_activity: 2026-09-23
+last_activity_desc: ROADMAP.md criado; 32 requisitos v1 mapeados em 5 fases (cobertura 32/32); hospedagem na VPS + deploy contínuo (INFRA-05) incorporados
+state_head: 0f6d78adc40647e31de4943ebd8d92691384acd7
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
-  percent: 0
 ---
 
 # Project State
@@ -30,6 +37,7 @@ Progress: [░░░░░░░░░░] 0%
 ## Performance Metrics
 
 **Velocity:**
+
 - Total plans completed: 0
 - Average duration: —
 - Total execution time: —
@@ -41,6 +49,7 @@ Progress: [░░░░░░░░░░] 0%
 | - | - | - | - |
 
 **Recent Trend:**
+
 - Last 5 plans: —
 - Trend: —
 
@@ -77,6 +86,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-23
-Stopped at: ROADMAP.md e STATE.md criados; REQUIREMENTS.md atualizado com traceability — aguardando aprovação do usuário
-Resume file: None
+Last session: 2026-09-23T19:59:37.221Z
+Stopped at: Phase 1 context gathered
+Resume file: .planning/phases/01-n-cleo-confi-vel-banco-cat-logo-taco-e-loop-de-registro-com/01-CONTEXT.md
