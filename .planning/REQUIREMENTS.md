@@ -102,17 +102,47 @@ Explicitly excluded. Documented to prevent scope creep.
 
 ## Traceability
 
-Which phases cover which requirements. Updated during roadmap creation.
+Which phases cover which requirements. Updated during roadmap creation (2026-09-23).
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (to be filled by roadmap) | | Pending |
+| REG-01 | Phase 1 | Pending |
+| REG-02 | Phase 1 | Pending |
+| REG-03 | Phase 1 | Pending |
+| REG-04 | Phase 1 | Pending |
+| REG-05 | Phase 1 | Pending |
+| REG-06 | Phase 1 | Pending |
+| ALIM-01 | Phase 1 | Pending |
+| ALIM-06 | Phase 1 | Pending |
+| META-01 | Phase 1 | Pending |
+| INFRA-01 | Phase 1 | Pending |
+| INFRA-02 | Phase 1 | Pending |
+| INFRA-03 | Phase 1 | Pending |
+| INFRA-04 | Phase 1 | Pending |
+| ALIM-02 | Phase 2 | Pending |
+| ALIM-03 | Phase 2 | Pending |
+| ALIM-04 | Phase 2 | Pending |
+| ALIM-05 | Phase 2 | Pending |
+| META-02 | Phase 3 | Pending |
+| META-03 | Phase 3 | Pending |
+| META-04 | Phase 3 | Pending |
+| TREINO-01 | Phase 3 | Pending |
+| TREINO-02 | Phase 3 | Pending |
+| RELAT-01 | Phase 3 | Pending |
+| CORPO-01 | Phase 4 | Pending |
+| CORPO-02 | Phase 4 | Pending |
+| CORPO-03 | Phase 4 | Pending |
+| SUPLE-01 | Phase 5 | Pending |
+| SUPLE-02 | Phase 5 | Pending |
+| RELAT-02 | Phase 5 | Pending |
+| DASH-01 | Phase 5 | Pending |
+| DASH-02 | Phase 5 | Pending |
 
 **Coverage:**
 - v1 requirements: 31 total
-- Mapped to phases: 0
-- Unmapped: 31 ⚠️
+- Mapped to phases: 31
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-09-23*
-*Last updated: 2026-09-23 after initial definition*
+*Last updated: 2026-09-23 — traceability preenchida pelo roadmap (5 fases, cobertura 31/31)*
