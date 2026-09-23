@@ -37,7 +37,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. Ajustar as metas do dia por mensagem ("meta 1800kcal") muda o saldo restante imediatamente
   5. Fundação técnica verificável: servidor MCP exposto via Streamable HTTP na VPS e consumível pelo Hermes por URL com endpoints protegidos por token (era do SDK v2 vs v1 verificada no primeiro contato, com fallback documentado p/ v1), SQLite em WAL com migrations versionadas + backup automático antes de cada migration, datas gravadas como `timestamp_utc` + `data_local`, e deploy automático funcionando — merge na `main` publica a versão nova na VPS via GitHub Actions
 
-**Plans**: 5 plans
+**Plans**: 0/5 plans executed
 
 Plans:
 **Wave 1**
@@ -125,7 +125,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Núcleo confiável | 0/5 | Not started | - |
+| 1. Núcleo confiável | 0/5 | Planned    |  |
 | 2. Open Food Facts + cache | 0/TBD | Not started | - |
 | 3. Rotina (fases, treinos, presets) | 0/TBD | Not started | - |
 | 4. Corpo (peso, medidas, fotos) | 0/TBD | Not started | - |

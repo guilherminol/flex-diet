@@ -9,16 +9,16 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Registro de Refeições
 
-- [ ] **REG-01**: User registra o que comeu por mensagem em linguagem natural ("almocei arroz, feijão e frango") e a refeição é logada com os macros debitados
-- [ ] **REG-02**: Todo registro responde com o saldo restante do dia (calorias, proteína, carbo, gordura) junto dos itens debitados + gramas + fonte (TACO / Open Food Facts / estimativa)
+- [x] **REG-01**: User registra o que comeu por mensagem em linguagem natural ("almocei arroz, feijão e frango") e a refeição é logada com os macros debitados
+- [x] **REG-02**: Todo registro responde com o saldo restante do dia (calorias, proteína, carbo, gordura) junto dos itens debitados + gramas + fonte (TACO / Open Food Facts / estimativa)
 - [ ] **REG-03**: User pode editar ou remover um registro feito, por mensagem
 - [ ] **REG-04**: User pode repetir uma refeição de dia anterior ("repetir almoço de ontem")
-- [ ] **REG-05**: Registro retroativo ("ontem jantei X") cai no dia correto
+- [x] **REG-05**: Registro retroativo ("ontem jantei X") cai no dia correto
 - [ ] **REG-06**: Mensagem repetida/reenviada (retry do canal) não duplica registro (idempotência)
 
 ### Catálogo de Alimentos
 
-- [ ] **ALIM-01**: Catálogo próprio com valores por 100g semeado com a tabela TACO, com teste de sanidade no import (banana ≈ 89 kcal/100g; se vier ~372, é kJ)
+- [x] **ALIM-01**: Catálogo próprio com valores por 100g semeado com a tabela TACO, com teste de sanidade no import (banana ≈ 89 kcal/100g; se vier ~372, é kJ)
 - [ ] **ALIM-02**: Consulta ao Open Food Facts por código de barras (produto industrializado)
 - [ ] **ALIM-03**: Consulta ao Open Food Facts por nome do produto
 - [ ] **ALIM-04**: Resultado de consulta externa é cacheado automaticamente no catálogo, com fonte e data da consulta
@@ -27,7 +27,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Metas e Fases
 
-- [ ] **META-01**: Metas diárias fixas de calorias + macros, ajustáveis por mensagem ("meta 1800kcal")
+- [x] **META-01**: Metas diárias fixas de calorias + macros, ajustáveis por mensagem ("meta 1800kcal")
 - [ ] **META-02**: Fases de cutting/bulk/manutenção, cada uma com período e conjunto próprio de metas
 - [ ] **META-03**: Troca de fase por mensagem; fim de fase sem próxima definida → sistema pergunta o que fazer, nunca assume
 - [ ] **META-04**: Aderência de cada dia é calculada contra a meta vigente naquele dia (metas como histórico por data)
@@ -61,9 +61,9 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Núcleo Técnico
 
 - [ ] **INFRA-01**: Servidor MCP com ferramentas semânticas de domínio, exposto via Streamable HTTP na VPS e consumido pelo Hermes por URL, com endpoints protegidos por token; verificar a era do SDK (v2 vs v1) que o Hermes negocia no primeiro contato
-- [ ] **INFRA-02**: SQLite local em modo WAL; migrations versionadas rodadas no boot com backup automático antes de cada migration
-- [ ] **INFRA-03**: Datas gravadas na escrita como `timestamp_utc` + `data_local` (America/Sao_Paulo); saldo derivado em leitura por uma única implementação
-- [ ] **INFRA-04**: Dados e fotos 100% na VPS pessoal do usuário (sem nuvem de terceiros)
+- [x] **INFRA-02**: SQLite local em modo WAL; migrations versionadas rodadas no boot com backup automático antes de cada migration
+- [x] **INFRA-03**: Datas gravadas na escrita como `timestamp_utc` + `data_local` (America/Sao_Paulo); saldo derivado em leitura por uma única implementação
+- [x] **INFRA-04**: Dados e fotos 100% na VPS pessoal do usuário (sem nuvem de terceiros)
 - [ ] **INFRA-05**: Merge na `main` no GitHub dispara deploy automático na VPS (GitHub Actions + SSH): a versão nova do serviço sobe sem intervenção manual
 
 ## v2 Requirements
@@ -107,19 +107,19 @@ Which phases cover which requirements. Updated during roadmap creation (2026-09-
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| REG-01 | Phase 1 | Pending |
-| REG-02 | Phase 1 | Pending |
+| REG-01 | Phase 1 | Complete |
+| REG-02 | Phase 1 | Complete |
 | REG-03 | Phase 1 | Pending |
 | REG-04 | Phase 1 | Pending |
-| REG-05 | Phase 1 | Pending |
+| REG-05 | Phase 1 | Complete |
 | REG-06 | Phase 1 | Pending |
-| ALIM-01 | Phase 1 | Pending |
+| ALIM-01 | Phase 1 | Complete |
 | ALIM-06 | Phase 1 | Pending |
-| META-01 | Phase 1 | Pending |
+| META-01 | Phase 1 | Complete |
 | INFRA-01 | Phase 1 | Pending |
-| INFRA-02 | Phase 1 | Pending |
-| INFRA-03 | Phase 1 | Pending |
-| INFRA-04 | Phase 1 | Pending |
+| INFRA-02 | Phase 1 | Complete |
+| INFRA-03 | Phase 1 | Complete |
+| INFRA-04 | Phase 1 | Complete |
 | INFRA-05 | Phase 1 | Pending |
 | ALIM-02 | Phase 2 | Pending |
 | ALIM-03 | Phase 2 | Pending |
@@ -141,6 +141,7 @@ Which phases cover which requirements. Updated during roadmap creation (2026-09-
 | DASH-02 | Phase 5 | Pending |
 
 **Coverage:**
+
 - v1 requirements: 32 total
 - Mapped to phases: 32
 - Unmapped: 0 ✓
