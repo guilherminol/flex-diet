@@ -1,0 +1,16 @@
+# Dependências
+node_modules/
+
+# Dados locais (SQLite + backups) — dados de saúde NUNCA no git
+data/
+
+# Secrets de deploy (MCP_TOKEN, PORT, PUBLIC_HOST)
+compose.env
+
+# Bancos SQLite e sidecars WAL/SHM
+*.db
+*.db-wal
+*.db-shm
+
+# Build
+dist/
