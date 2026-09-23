@@ -66,6 +66,19 @@ created: "2026-09-23"
 
 ---
 
+## Structural / Slow Checks — Conscious Acceptance (nyquist)
+
+> Registrado na revisão iteration 2 (warning `nyquist_compliance_8b`): dois comandos estruturais excedem o orçamento de amostragem por tarefa (~30s) e são ACEITOS conscientemente como checagens **per-wave / one-time**, não per-task. O feedback rápido por tarefa continua nos verifies de segundos (vitest/check); estes dois provam estrutura (grafo de dependências e imagem de container) e rodam no máximo uma vez por plan.
+
+| Command | Plan / Task | Latency esperada | Classificação | Aceite |
+|---------|-------------|------------------|---------------|--------|
+| `npm --prefix . install` | 01-01 Task 1 | minutos (uma vez, resolve o grafo todo) | structural, per-wave | ✅ consciente |
+| `docker compose build` | 01-04 Task 1 | minutos (uma vez, build da imagem) | structural, per-wave | ✅ consciente |
+
+**Regra:** nenhum dos dois entra no loop de sampling per-task; os verifies por tarefa dessas Tasks (vitest, `node scripts/check-deploy-contract.mjs`, check de `tsx` nas dependencies) são os que rodam a cada commit.
+
+---
+
 ## Validation Sign-Off
 
 - [ ] All tasks have `<automated>` verify or Wave 0 dependencies

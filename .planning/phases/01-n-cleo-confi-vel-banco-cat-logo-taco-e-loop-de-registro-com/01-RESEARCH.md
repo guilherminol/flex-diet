@@ -500,23 +500,25 @@ services:
 
 ## Open Questions
 
-1. **Hermes: era de protocolo + como envia o token**
+**Status: RESOLVED** — nenhuma pergunta aberta restante; cada uma tem disposição implementada nos plans da fase (checkpoints humanos, medição em teste ou decisão registrada). Anotação feita na revisão iteration 2 do plan-phase.
+
+1. **(RESOLVED — checkpoint humano) Hermes: era de protocolo + como envia o token**
    - What we know: spec 2026-07-28 pede `Authorization: Bearer`; SDK v2 tem verifier de token estático pronto (exemplo oficial). STATE.md já marca isso p/ verificação no 1º contato.
    - What's unclear: se o Hermes suporta header customizado e qual era negocia.
-   - Recommendation: task final da fase = integrar Hermes com checkpoint humano; fallback v1 documentado (A2).
+   - Resolution: task final da fase = integrar Hermes com checkpoint humano (01-05 Task 3 registra a era negociada); fallback v1 documentado em 01-05 Task 2 (docs/sdk-v1-fallback.md).
 
-2. **Secrets de deploy e prep da VPS**
+2. **(RESOLVED — checkpoint humano + user_setup) Secrets de deploy e prep da VPS**
    - What we know: `deploy.yml` pula sem secrets (verbatim verificado); `gh` não está instalado localmente para conferir.
-   - Recommendation: checkpoint humano no início da fase: configurar secrets + clonar repo na VPS + confirmar docker/compose lá.
+   - Resolution: virou user_setup + precondition do checkpoint de 1º deploy (01-04 Task 3): secrets VPS_* no GitHub, repo clonado em VPS_PATH, docker/compose e compose.env confirmados na VPS antes do merge.
 
-3. **TLS para `/mcp`**
+3. **(RESOLVED — risco aceito + decisão adiada ao checkpoint) TLS para `/mcp`**
    - What we know: token vai no header; se o Hermes acessa por HTTP puro na internet, o token trafega em claro.
    - What's unclear: se a VPS do usuário já tem reverse proxy (Caddy/nginx) com TLS.
-   - Recommendation: perguntar no discuss/checkpoint; default MVP = HTTP + token + firewall, com TLS como follow-up se o proxy existir.
+   - Resolution: default MVP aceito conscientemente — HTTP + token de alta entropia + firewall (risco T-01-15, disposition accept no threat model do 01-04); a decisão de TLS é reavaliada e registrada no checkpoint do Hermes (01-05 Task 3).
 
-4. **Cobertura real do join POF↔TACO no seed**
+4. **(RESOLVED — medição em teste, sem promessa de cobertura) Cobertura real do join POF↔TACO no seed**
    - What we know: 82 inequívocos (análise do dataset, verbatim no Pitfall 3).
-   - Recommendation: implementar o join conservador (nome-base único), medir o resultado real no seed e logar a contagem; não prometer cobertura total.
+   - Resolution: join conservador implementado no 01-02 com medição real: o seed loga no boot a contagem de alimentos com >= 1 medida caseira e o must_have do 01-02 fixa o esperado (~82); cobertura parcial aceita — D-04 manda o Hermes estimar e declarar premissa no resto.
 
 ## Environment Availability
 
