@@ -1,4 +1,5 @@
 import { McpServer, type McpServerFactory } from "@modelcontextprotocol/server";
+import { registrarToolDefinirMetas } from "./tools/metas.js";
 import { registrarToolRegistrarRefeicao } from "./tools/registrar.js";
 import { registrarToolConsultarSaldo } from "./tools/saldo.js";
 
@@ -11,5 +12,6 @@ export const buildServer: McpServerFactory = () => {
   const server = new McpServer({ name: "flex-diet", version: "0.1.0" });
   registrarToolRegistrarRefeicao(server);
   registrarToolConsultarSaldo(server);
+  registrarToolDefinirMetas(server);
   return server;
 };
