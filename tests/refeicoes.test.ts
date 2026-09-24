@@ -11,8 +11,10 @@ import {
   listarRegistros,
   registrarRefeicao,
   removerRegistro,
+  repetirRefeicao,
 } from "../src/domain/refeicoes.js";
 import { calcularSaldo, type Saldo } from "../src/domain/saldo.js";
+import { hojeLocalSp } from "../src/lib/datas.js";
 
 // Datas fixas p/ determinismo (metas com data_inicio 2020-01-01 valem p/ todas).
 // Cada teste usa o SEU dia — o dedupe de 10 min (REG-06) pegaria payload
@@ -234,3 +236,149 @@ describe("editar com data move o registro entre dias (REG-05 + REG-03)", () => {
 function calcularSaldoDe(dataLocal: string): Saldo {
   return calcularSaldo(db, dataLocal);
 }
+
+describe("repetirRefeicao (REG-04)", () => {
+  it("repete a refeição de dia anterior p/ hoje: mesmos itens/gramas, id_curto NOVO e saldo do dia destino atualizado", () => {
+    const ontem = "2026-10-01";
+    const { registro: origem } = registrarRefeicao(db, {
+      data: ontem,
+      itens: [{ alimento_id: idArroz, gramas: 200 }],
+      tipoRefefeicao: "almoço",
+    });
+    const consumoHojeAntes = consumidoKcal(calcularSaldoDe(hojeLocalSp()));
+
+    const resultado = repetirRefeicao(db, {
+      dataOrigem: ontem,
+      tipoRefefeicao: "almoço",
+    });
+
+    // NOVO registro hoje, com os mesmos pares alimento+gramas
+    expect(resultado.duplicado).toBe(false);
+    expect(resultado.registro.id_curto).not.toBe(origem.id_curto);
+    expect(resultado.registro.data_local).toBe(hojeLocalSp());
+    expect(resultado.registro.itens).toHaveLength(1);
+    expect(resultado.registro.itens[0]?.nome).toBe("Arroz, tipo 2, cozido");
+    expect(resultado.registro.itens[0]?.gramas).toBe(200);
+    expect(resultado.registro.tipo_refeicao).toBe("almoço");
+
+    // saldo do dia destino vem na mesma resposta e debita a repetição
+    expect(resultado.saldo.status).toBe("ok");
+    expect(consumidoKcal(resultado.saldo)).toBeCloseTo(
+      consumoHojeAntes + (200 * 130.1196) / 100,
+      0,
+    );
+
+    // a origem permanece intacta no dia de origem
+    expect(
+      listarRegistros(db, ontem).registros.some(
+        (r) => r.id_curto === origem.id_curto,
+      ),
+    ).toBe(true);
+  });
+
+  it("repetição RECOMPUTA macros do catálogo atual (não copia o snapshot antigo)", () => {
+    const dia = "2026-10-02";
+    const { registro: origem } = registrarRefeicao(db, {
+      data: dia,
+      itens: [{ alimento_id: idBanana, gramas: 100 }],
+      tipoRefefeicao: "lanche",
+    });
+    const kcalOriginal = (
+      db
+        .prepare(`SELECT kcal_100g FROM alimento WHERE id = ?`)
+        .get(idBanana) as { kcal_100g: number | null }
+    ).kcal_100g;
+    try {
+      // "atualização" do catálogo: banana passa a 100 kcal/100g
+      db.prepare(`UPDATE alimento SET kcal_100g = 100 WHERE id = ?`).run(
+        idBanana,
+      );
+
+      const resultado = repetirRefeicao(db, { dataOrigem: dia });
+
+      // novo registro usa o valor NOVO (100g × 100/100 = 100 kcal, não 86,8)
+      expect(resultado.registro.itens[0]?.kcal).toBeCloseTo(100, 0);
+      // snapshot da origem permanece o que foi gravado no dia
+      expect(origem.itens[0]?.kcal).toBeCloseTo(86.805, 0);
+    } finally {
+      // restaura o catálogo para os demais testes
+      db.prepare(`UPDATE alimento SET kcal_100g = ? WHERE id = ?`).run(
+        kcalOriginal,
+        idBanana,
+      );
+    }
+  });
+
+  it("origem inexistente → registro_nao_encontrado estruturado", () => {
+    const erro = capturarErro(() =>
+      repetirRefeicao(db, {
+        dataOrigem: "2019-01-01",
+        tipoRefefeicao: "jantar",
+      }),
+    );
+    expect(erro.codigo).toBe("registro_nao_encontrado");
+    expect(erro.message).toContain("2019-01-01");
+  });
+
+  it("dois registros do mesmo tipo na origem sem id_curto → refeicao_ambigua com candidatos", () => {
+    const dia = "2026-10-03";
+    registrarRefeicao(db, {
+      data: dia,
+      itens: [{ alimento_id: idArroz, gramas: 100 }],
+      tipoRefefeicao: "almoço",
+    });
+    registrarRefeicao(db, {
+      data: dia,
+      itens: [{ alimento_id: idBanana, gramas: 100 }],
+      tipoRefefeicao: "almoço",
+    });
+
+    const erro = capturarErro(() =>
+      repetirRefeicao(db, { dataOrigem: dia, tipoRefefeicao: "almoço" }),
+    );
+    expect(erro.codigo).toBe("refeicao_ambigua");
+    const candidatos = erro.extras.candidatos as { id_curto: string }[];
+    expect(candidatos).toHaveLength(2);
+    expect(erro.message).toContain("id_curto_origem");
+  });
+
+  it("repetir com data_destino retroativa cai no dia correto", () => {
+    const dia = "2026-10-04";
+    const destino = "2026-10-05";
+    registrarRefeicao(db, {
+      data: dia,
+      itens: [{ alimento_id: idBanana, gramas: 130 }],
+      tipoRefefeicao: "café",
+    });
+
+    const resultado = repetirRefeicao(db, {
+      dataOrigem: dia,
+      tipoRefefeicao: "café",
+      dataDestino: destino,
+    });
+
+    expect(resultado.registro.data_local).toBe(destino);
+    expect(dataDe(resultado.saldo)).toBe(destino);
+  });
+
+  it("id_curto_origem vence o filtro por tipo e resolve a ambiguidade", () => {
+    const dia = "2026-10-06";
+    const primeira = registrarRefeicao(db, {
+      data: dia,
+      itens: [{ alimento_id: idArroz, gramas: 100 }],
+      tipoRefefeicao: "jantar",
+    });
+    registrarRefeicao(db, {
+      data: dia,
+      itens: [{ alimento_id: idBanana, gramas: 90 }],
+      tipoRefefeicao: "jantar",
+    });
+
+    const resultado = repetirRefeicao(db, {
+      dataOrigem: dia,
+      idCurtoOrigem: primeira.registro.id_curto,
+    });
+    expect(resultado.registro.itens[0]?.nome).toBe("Arroz, tipo 2, cozido");
+    expect(resultado.registro.itens[0]?.gramas).toBe(100);
+  });
+});

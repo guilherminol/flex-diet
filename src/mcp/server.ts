@@ -6,13 +6,15 @@ import {
   registrarToolEditarRegistro,
   registrarToolListarRegistros,
   registrarToolRemoverRegistro,
+  registrarToolRepetirRefeicao,
 } from "./tools/registros.js";
 import { registrarToolConsultarSaldo } from "./tools/saldo.js";
 
 /**
  * Factory do McpServer — chamada POR request (stateless; Pattern 1).
- * Estado nenhum vive aqui: tudo no SQLite. Plan 03 registra aqui as tools de
- * correção (listar/editar/remover); repetir_refeicao entra no mesmo ponto.
+ * Estado nenhum vive aqui: tudo no SQLite. As 8 tools da fase (Pattern 5):
+ * registrar_refeicao, consultar_saldo, definir_metas, buscar_alimento,
+ * listar_registros, editar_registro, remover_registro e repetir_refeicao.
  */
 export const buildServer: McpServerFactory = () => {
   const server = new McpServer({ name: "flex-diet", version: "0.1.0" });
@@ -23,5 +25,6 @@ export const buildServer: McpServerFactory = () => {
   registrarToolListarRegistros(server);
   registrarToolEditarRegistro(server);
   registrarToolRemoverRegistro(server);
+  registrarToolRepetirRefeicao(server);
   return server;
 };

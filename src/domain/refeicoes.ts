@@ -1,7 +1,12 @@
 import { randomBytes } from "node:crypto";
 import type { Db } from "../db/connect.js";
 import { getDb } from "../db/connect.js";
-import { agoraIsoUtc, dataLocalSp, resolverDataLocal } from "../lib/datas.js";
+import {
+  agoraIsoUtc,
+  dataLocalSp,
+  hojeLocalSp,
+  resolverDataLocal,
+} from "../lib/datas.js";
 import { dedupeHash, inicioDaJanela } from "../lib/dedupe.js";
 import { calcularSaldo, type Saldo } from "./saldo.js";
 
@@ -456,4 +461,95 @@ export function removerRegistro(
     data_local: origem.data_local,
     saldo: calcularSaldo(db, origem.data_local),
   };
+}
+
+export interface RepetirEntrada {
+  /** Dia da refeição original (YYYY-MM-DD). */
+  dataOrigem: string;
+  /** Seletor exato da origem — vence o filtro por tipo. */
+  idCurtoOrigem?: string;
+  /** Seletor alternativo; só é aceito se bater em EXATAMENTE 1 registro. */
+  tipoRefefeicao?: string;
+  /** Dia do novo registro (default: hoje local America/Sao_Paulo). */
+  dataDestino?: string;
+}
+
+/**
+ * repetirRefeicao — relogar refeição de dia anterior (REG-04). Localiza a
+ * origem por id_curto explícito ou pelo ÚNICO registro de dataOrigem que bate
+ * o tipoRefefeicao — mais de um candidato responde `refeicao_ambigua` com a
+ * lista de id_curtos (o Hermes pergunta ao usuário; nunca escolhe sozinho).
+ * Cria um NOVO registro em dataDestino com os MESMOS pares alimento_id+gramas,
+ * mas macros RECOMPUTADOS do catálogo atual e id_curto NOVO — a reusa do
+ * caminho de registrarRefeicao garante transação/snapshot/dedupe idênticos
+ * (repetir 2x o mesmo payload no mesmo dia dentro da janela deduplica, como
+ * qualquer reenvio).
+ */
+export function repetirRefeicao(
+  db: Db,
+  entrada: RepetirEntrada,
+): { registro: RegistroEco; saldo: Saldo; duplicado: boolean } {
+  const { dataOrigem, idCurtoOrigem, tipoRefefeicao, dataDestino } = entrada;
+  resolverDataLocal(dataOrigem);
+  if (dataDestino !== undefined) resolverDataLocal(dataDestino);
+
+  const localizar = db.prepare(
+    `SELECT id, id_curto, data_local, timestamp_utc, tipo_refeicao
+     FROM refeicao WHERE id_curto = ?`,
+  );
+  const listarDoDia = db.prepare(
+    `SELECT id, id_curto, data_local, timestamp_utc, tipo_refeicao
+     FROM refeicao
+     WHERE data_local = ? AND (? IS NULL OR tipo_refeicao = ?)
+     ORDER BY timestamp_utc DESC`,
+  );
+
+  let origem: RefeicaoLinha;
+  if (idCurtoOrigem !== undefined) {
+    const porId = localizar.get(idCurtoOrigem) as RefeicaoLinha | undefined;
+    if (!porId) throw registroNaoEncontrado(idCurtoOrigem);
+    origem = porId;
+  } else {
+    const candidatos = listarDoDia.all(
+      dataOrigem,
+      tipoRefefeicao ?? null,
+      tipoRefefeicao ?? null,
+    ) as RefeicaoLinha[];
+    if (candidatos.length === 0) {
+      throw new ErroDominio(
+        "registro_nao_encontrado",
+        `nenhum registro em ${dataOrigem}${tipoRefefeicao ? ` do tipo "${tipoRefefeicao}"` : ""} — use listar_registros para ver os ids do dia`,
+      );
+    }
+    if (candidatos.length > 1) {
+      throw new ErroDominio(
+        "refeicao_ambigua",
+        `${candidatos.length} registros em ${dataOrigem} batem o critério — informe id_curto_origem; candidatos: ${candidatos.map((c) => `#${c.id_curto}`).join(", ")}`,
+        {
+          candidatos: candidatos.map((c) => ({
+            id_curto: c.id_curto,
+            tipo_refeicao: c.tipo_refeicao,
+            timestamp_utc: c.timestamp_utc,
+          })),
+        },
+      );
+    }
+    origem = candidatos[0] as RefeicaoLinha;
+  }
+
+  const itensOrigem = (
+    db
+      .prepare(
+        `SELECT alimento_id, gramas FROM refeicao_item WHERE refeicao_id = ? ORDER BY id`,
+      )
+      .all(origem.id) as ItemEntrada[]
+  ).filter((item) => item.alimento_id !== null);
+
+  return registrarRefeicao(db, {
+    data: dataDestino ?? hojeLocalSp(),
+    itens: itensOrigem,
+    ...(origem.tipo_refeicao !== null
+      ? { tipoRefefeicao: origem.tipo_refeicao }
+      : {}),
+  });
 }

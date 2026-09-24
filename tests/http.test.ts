@@ -128,16 +128,41 @@ describe('loop "registrei → saldo" de ponta a ponta (INFRA-01, REG-01/02)', ()
     expect(json?.result?.serverInfo?.name).toBe("flex-diet");
   });
 
-  it("tools/list lista registrar_refeicao e consultar_saldo", async () => {
+  it("tools/list lista as 8 tools da fase com annotations corretas", async () => {
     const { status, json } = await rpc({
       jsonrpc: "2.0",
       id: 2,
       method: "tools/list",
     });
     expect(status).toBe(200);
-    const nomes = (json?.result?.tools ?? []).map((t) => t.name);
-    expect(nomes).toContain("registrar_refeicao");
-    expect(nomes).toContain("consultar_saldo");
+    const tools = json?.result?.tools ?? [];
+    const nomes = tools.map((t) => t.name);
+    // total da fase: 8 de 8
+    expect(nomes).toEqual(
+      expect.arrayContaining([
+        "registrar_refeicao",
+        "consultar_saldo",
+        "definir_metas",
+        "buscar_alimento",
+        "listar_registros",
+        "editar_registro",
+        "remover_registro",
+        "repetir_refeicao",
+      ]),
+    );
+    expect(nomes).toHaveLength(8);
+
+    // annotations: consulta é readOnly; remover é destrutivo (Hermes confirma)
+    interface ToolMeta {
+      name: string;
+      annotations?: { readOnlyHint?: boolean; destructiveHint?: boolean };
+    }
+    const porNome = Object.fromEntries(
+      (tools as unknown as ToolMeta[]).map((t) => [t.name, t]),
+    );
+    expect(porNome.listar_registros?.annotations?.readOnlyHint).toBe(true);
+    expect(porNome.remover_registro?.annotations?.destructiveHint).toBe(true);
+    expect(porNome.consultar_saldo?.annotations?.readOnlyHint).toBe(true);
   });
 
   it("registrar 120g de banana maçã (retroativo) retorna eco + id_curto + saldo na mesma resposta", async () => {
