@@ -64,7 +64,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **INFRA-02**: SQLite local em modo WAL; migrations versionadas rodadas no boot com backup automático antes de cada migration
 - [x] **INFRA-03**: Datas gravadas na escrita como `timestamp_utc` + `data_local` (America/Sao_Paulo); saldo derivado em leitura por uma única implementação
 - [x] **INFRA-04**: Dados e fotos 100% na VPS pessoal do usuário (sem nuvem de terceiros)
-- [ ] **INFRA-05**: Merge na `main` no GitHub dispara deploy automático na VPS (GitHub Actions + SSH): a versão nova do serviço sobe sem intervenção manual
+- [x] **INFRA-05**: Merge na `main` no GitHub dispara deploy automático na VPS (GitHub Actions + SSH): a versão nova do serviço sobe sem intervenção manual
 
 ## v2 Requirements
 
@@ -120,7 +120,7 @@ Which phases cover which requirements. Updated during roadmap creation (2026-09-
 | INFRA-02 | Phase 1 | Complete |
 | INFRA-03 | Phase 1 | Complete |
 | INFRA-04 | Phase 1 | Complete |
-| INFRA-05 | Phase 1 | Pending |
+| INFRA-05 | Phase 1 | Complete |
 | ALIM-02 | Phase 2 | Pending |
 | ALIM-03 | Phase 2 | Pending |
 | ALIM-04 | Phase 2 | Pending |
