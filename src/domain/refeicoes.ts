@@ -89,15 +89,16 @@ const CARREGAR_ITENS = `
   WHERE i.refeicao_id = ?
   ORDER BY i.id`;
 
-/** Reconstrói o eco de uma refeição gravada (itens vindos do snapshot). */
-function carregarRegistroEco(db: Db, refeicaoId: number): RegistroEco {
-  const r = db.prepare(CARREGAR_REFEICAO).get(refeicaoId) as {
-    id_curto: string;
-    data_local: string;
-    timestamp_utc: string;
-    tipo_refeicao: string | null;
-  };
-  const itens = db.prepare(CARREGAR_ITENS).all(refeicaoId) as ItemEco[];
+interface RefeicaoLinha {
+  id: number;
+  id_curto: string;
+  data_local: string;
+  timestamp_utc: string;
+  tipo_refeicao: string | null;
+}
+
+function ecoDe(db: Db, r: RefeicaoLinha): RegistroEco {
+  const itens = db.prepare(CARREGAR_ITENS).all(r.id) as ItemEco[];
   return {
     id_curto: r.id_curto,
     data_local: r.data_local,
@@ -105,6 +106,103 @@ function carregarRegistroEco(db: Db, refeicaoId: number): RegistroEco {
     ...(r.tipo_refeicao !== null ? { tipo_refeicao: r.tipo_refeicao } : {}),
     itens,
   };
+}
+
+/** Reconstrói o eco de uma refeição gravada (itens vindos do snapshot). */
+function carregarRegistroEco(db: Db, refeicaoId: number): RegistroEco {
+  const r = db.prepare(CARREGAR_REFEICAO).get(refeicaoId) as RefeicaoLinha;
+  return ecoDe(db, r);
+}
+
+/** id_curto inexistente — com dica de usar listar_registros (D-06). */
+const registroNaoEncontrado = (idCurto: string): ErroDominio =>
+  new ErroDominio(
+    "registro_nao_encontrado",
+    `registro #${idCurto} não encontrado — use listar_registros para ver os ids do dia`,
+  );
+
+/** Validação de entrada compartilhada por registrar/editar (falha fora da transação). */
+function validarItens(itens: ItemEntrada[]): void {
+  if (!Array.isArray(itens) || itens.length === 0) {
+    throw new ErroDominio(
+      "itens_obrigatorio",
+      "informe ao menos um item com alimento_id e gramas",
+    );
+  }
+  for (const item of itens) {
+    if (!Number.isInteger(item.alimento_id) || item.alimento_id <= 0) {
+      throw new ErroDominio(
+        "alimento_id_invalido",
+        `alimento_id deve ser inteiro positivo (recebido ${item.alimento_id})`,
+      );
+    }
+    if (!Number.isFinite(item.gramas) || item.gramas <= 0) {
+      throw new ErroDominio(
+        "gramas_invalidas",
+        `gramas deve ser um número positivo (recebido ${item.gramas} para alimento ${item.alimento_id})`,
+      );
+    }
+  }
+}
+
+/** Resolve os alimentos do catálogo — inexistente lança ANTES de qualquer escrita. */
+function carregarAlimentos(db: Db, itens: ItemEntrada[]): AlimentoLinha[] {
+  const buscarAlimento = db.prepare(
+    `SELECT id, nome, fonte, kcal_100g, proteina_g_100g, carbo_g_100g, gordura_g_100g
+     FROM alimento WHERE id = ?`,
+  );
+  return itens.map((item) => {
+    const alimento = buscarAlimento.get(item.alimento_id) as
+      | AlimentoLinha
+      | undefined;
+    if (!alimento) {
+      throw new AlimentoNaoEncontradoError(
+        itens.map((i) => i.alimento_id),
+        sugestoesDoCatalogo(db),
+      );
+    }
+    return alimento;
+  });
+}
+
+/**
+ * Grava os itens de uma refeição com snapshot de macros do catálogo
+ * (macro_100g × gramas/100; NULL → 0) — a ÚNICA implementação do débito,
+ * usada por registrar/editar/repetir.
+ */
+function debitarItens(
+  db: Db,
+  refeicaoId: number,
+  itens: ItemEntrada[],
+  alimentos: AlimentoLinha[],
+): ItemEco[] {
+  const inserirItem = db.prepare(
+    `INSERT INTO refeicao_item (refeicao_id, alimento_id, gramas, kcal, proteina_g, carbo_g, gordura_g)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+  );
+  return itens.map((item, i) => {
+    const alimento = alimentos[i] as AlimentoLinha;
+    const fator = item.gramas / 100;
+    const itemEco: ItemEco = {
+      nome: alimento.nome,
+      gramas: item.gramas,
+      fonte: alimento.fonte,
+      kcal: (alimento.kcal_100g ?? 0) * fator,
+      proteina_g: (alimento.proteina_g_100g ?? 0) * fator,
+      carbo_g: (alimento.carbo_g_100g ?? 0) * fator,
+      gordura_g: (alimento.gordura_g_100g ?? 0) * fator,
+    };
+    inserirItem.run(
+      refeicaoId,
+      alimento.id,
+      item.gramas,
+      itemEco.kcal,
+      itemEco.proteina_g,
+      itemEco.carbo_g,
+      itemEco.gordura_g,
+    );
+    return itemEco;
+  });
 }
 
 /**
@@ -127,33 +225,10 @@ export function registrarRefeicao(
   const { data, tipoRefefeicao } = entrada;
   const itens = entrada.itens;
 
-  if (!Array.isArray(itens) || itens.length === 0) {
-    throw new ErroDominio(
-      "itens_obrigatorio",
-      "informe ao menos um item com alimento_id e gramas",
-    );
-  }
-  for (const item of itens) {
-    if (!Number.isInteger(item.alimento_id) || item.alimento_id <= 0) {
-      throw new ErroDominio(
-        "alimento_id_invalido",
-        `alimento_id deve ser inteiro positivo (recebido ${item.alimento_id})`,
-      );
-    }
-    if (!Number.isFinite(item.gramas) || item.gramas <= 0) {
-      throw new ErroDominio(
-        "gramas_invalidas",
-        `gramas deve ser um número positivo (recebido ${item.gramas} para alimento ${item.alimento_id})`,
-      );
-    }
-  }
+  validarItens(itens);
   // data inválida falha ANTES de abrir a transação
   if (data !== undefined) resolverDataLocal(data);
 
-  const buscarAlimento = db.prepare(
-    `SELECT id, nome, fonte, kcal_100g, proteina_g_100g, carbo_g_100g, gordura_g_100g
-     FROM alimento WHERE id = ?`,
-  );
   const existeIdCurto = db.prepare(
     `SELECT id FROM refeicao WHERE id_curto = ?`,
   );
@@ -167,10 +242,6 @@ export function registrarRefeicao(
      ORDER BY timestamp_utc DESC
      LIMIT 1`,
   );
-  const inserirItem = db.prepare(
-    `INSERT INTO refeicao_item (refeicao_id, alimento_id, gramas, kcal, proteina_g, carbo_g, gordura_g)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-  );
 
   // Transação SÍNCRONA — zero await no closure (better-sqlite3 rejeita async)
   const gravar = db.transaction(
@@ -178,18 +249,7 @@ export function registrarRefeicao(
       duplicado: boolean;
       registro: RegistroEco;
     } => {
-      const alimentos: AlimentoLinha[] = itens.map((item) => {
-        const alimento = buscarAlimento.get(item.alimento_id) as
-          | AlimentoLinha
-          | undefined;
-        if (!alimento) {
-          throw new AlimentoNaoEncontradoError(
-            itens.map((i) => i.alimento_id),
-            sugestoesDoCatalogo(db),
-          );
-        }
-        return alimento;
-      });
+      const alimentos = carregarAlimentos(db, itens);
 
       const timestampUtc = agoraIsoUtc();
       const dataLocal =
@@ -232,30 +292,7 @@ export function registrarRefeicao(
         hash,
       );
       const refeicaoId = Number(info.lastInsertRowid);
-
-      const ecoItens: ItemEco[] = itens.map((item, i) => {
-        const alimento = alimentos[i] as AlimentoLinha;
-        const fator = item.gramas / 100;
-        const itemEco: ItemEco = {
-          nome: alimento.nome,
-          gramas: item.gramas,
-          fonte: alimento.fonte,
-          kcal: (alimento.kcal_100g ?? 0) * fator,
-          proteina_g: (alimento.proteina_g_100g ?? 0) * fator,
-          carbo_g: (alimento.carbo_g_100g ?? 0) * fator,
-          gordura_g: (alimento.gordura_g_100g ?? 0) * fator,
-        };
-        inserirItem.run(
-          refeicaoId,
-          alimento.id,
-          item.gramas,
-          itemEco.kcal,
-          itemEco.proteina_g,
-          itemEco.carbo_g,
-          itemEco.gordura_g,
-        );
-        return itemEco;
-      });
+      const ecoItens = debitarItens(db, refeicaoId, itens, alimentos);
 
       return {
         duplicado: false,
@@ -287,4 +324,136 @@ export function registrarRefeicaoDaTool(entrada: {
   tipoRefefeicao?: string;
 }): { registro: RegistroEco; saldo: Saldo; duplicado: boolean } {
   return registrarRefeicao(getDb(), entrada);
+}
+
+export interface RegistroListado extends RegistroEco {
+  kcal_total: number;
+}
+
+/**
+ * listarRegistros — registros de um dia (REG-03, D-06): cobre o caso
+ * "usuário não citou o id". Ordenado por timestamp_utc; cada registro traz
+ * id_curto, tipo, itens (com macros do snapshot) e kcal_total — o Hermes
+ * escolhe a partir disso o que editar ou remover.
+ */
+export function listarRegistros(
+  db: Db,
+  dataLocal: string,
+): { data_local: string; registros: RegistroListado[] } {
+  const refeicoes = db
+    .prepare(
+      `SELECT id, id_curto, data_local, timestamp_utc, tipo_refeicao
+       FROM refeicao WHERE data_local = ? ORDER BY timestamp_utc`,
+    )
+    .all(dataLocal) as RefeicaoLinha[];
+  return {
+    data_local: dataLocal,
+    registros: refeicoes.map((r) => {
+      const registro = ecoDe(db, r);
+      const kcal_total = registro.itens.reduce(
+        (total, item) => total + item.kcal,
+        0,
+      );
+      return { ...registro, kcal_total };
+    }),
+  };
+}
+
+/**
+ * editarRegistro — correção por id curto (REG-03, D-06). Substituição COMPLETA
+ * dos itens (T-01-12): na MESMA transação valida os alimentos, apaga os itens
+ * antigos e insere os novos com snapshot RECOMPUTADO do catálogo; o
+ * dedupe_hash da linha é recalculado junto (o hash sempre reflete o conteúdo).
+ * `data` informada move o registro de dia (REG-05). Retorna o eco novo + saldo
+ * recalculado do dia afetado — e, se o dia mudou, também o saldo do dia
+ * anterior (`saldo_anterior`), para os DOIS dias saírem consistentes.
+ */
+export function editarRegistro(
+  db: Db,
+  idCurto: string,
+  entrada: { itens: ItemEntrada[]; data?: string; tipoRefefeicao?: string },
+): { registro: RegistroEco; saldo: Saldo; saldo_anterior?: Saldo } {
+  const { data, tipoRefefeicao } = entrada;
+  validarItens(entrada.itens);
+  if (data !== undefined) resolverDataLocal(data);
+
+  const localizar = db.prepare(
+    `SELECT id, id_curto, data_local, timestamp_utc, tipo_refeicao
+     FROM refeicao WHERE id_curto = ?`,
+  );
+  const atualizarRefeicao = db.prepare(
+    `UPDATE refeicao SET data_local = ?, tipo_refeicao = ?, dedupe_hash = ?
+     WHERE id = ?`,
+  );
+  const apagarItens = db.prepare(
+    `DELETE FROM refeicao_item WHERE refeicao_id = ?`,
+  );
+
+  // Transação SÍNCRONA — substituição completa atômica
+  const gravar = db.transaction(
+    (): { registro: RegistroEco; dataAnterior: string } => {
+      const origem = localizar.get(idCurto) as RefeicaoLinha | undefined;
+      if (!origem) throw registroNaoEncontrado(idCurto);
+
+      // valida ANTES de apagar — alimento inválido não deixa o registro vazio
+      const alimentos = carregarAlimentos(db, entrada.itens);
+
+      const novaData =
+        data === undefined ? origem.data_local : resolverDataLocal(data);
+      const novoTipo =
+        tipoRefefeicao !== undefined ? tipoRefefeicao : origem.tipo_refeicao;
+      atualizarRefeicao.run(
+        novaData,
+        novoTipo,
+        dedupeHash(novaData, entrada.itens),
+        origem.id,
+      );
+      apagarItens.run(origem.id);
+      debitarItens(db, origem.id, entrada.itens, alimentos);
+
+      return {
+        registro: carregarRegistroEco(db, origem.id),
+        dataAnterior: origem.data_local,
+      };
+    },
+  );
+
+  const { registro, dataAnterior } = gravar();
+  return {
+    registro,
+    saldo: calcularSaldo(db, registro.data_local),
+    ...(registro.data_local !== dataAnterior
+      ? { saldo_anterior: calcularSaldo(db, dataAnterior) }
+      : {}),
+  };
+}
+
+/**
+ * removerRegistro — exclui o registro por id curto (REG-03, D-06); os itens
+ * caem por ON DELETE CASCADE. Retorna confirmação + saldo recalculado do dia
+ * da refeição removida NA MESMA resposta.
+ */
+export function removerRegistro(
+  db: Db,
+  idCurto: string,
+): { removido: true; id_curto: string; data_local: string; saldo: Saldo } {
+  const localizar = db.prepare(
+    `SELECT id, id_curto, data_local, timestamp_utc, tipo_refeicao
+     FROM refeicao WHERE id_curto = ?`,
+  );
+  const removerRefeicao = db.prepare(`DELETE FROM refeicao WHERE id = ?`);
+
+  const origem = db.transaction((): RefeicaoLinha => {
+    const alvo = localizar.get(idCurto) as RefeicaoLinha | undefined;
+    if (!alvo) throw registroNaoEncontrado(idCurto);
+    removerRefeicao.run(alvo.id);
+    return alvo;
+  })();
+
+  return {
+    removido: true,
+    id_curto: origem.id_curto,
+    data_local: origem.data_local,
+    saldo: calcularSaldo(db, origem.data_local),
+  };
 }
