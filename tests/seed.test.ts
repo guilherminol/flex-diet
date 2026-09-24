@@ -68,6 +68,43 @@ describe("seed TACO (ALIM-01)", () => {
       .get() as { total: number };
     expect(total).toBe(primeira.alimentos);
     expect(total).toBeGreaterThan(500);
+    // medidas caseiras também estáveis no re-seed (upsert por UNIQUE)
+    expect(segunda.medidas).toBe(primeira.medidas);
+    expect(segunda.alimentosComMedidas).toBe(primeira.alimentosComMedidas);
+  });
+
+  it("óleo de soja (272) tem >= 1 medida caseira com gramas > 0 (join POF inequívoco)", () => {
+    const medidas = db
+      .prepare(
+        `SELECT m.descricao, m.gramas FROM medida_caseira m
+         JOIN alimento a ON a.id = m.alimento_id
+         WHERE a.fonte = 'taco' AND a.numero_taco = '272'
+         ORDER BY m.descricao`,
+      )
+      .all() as { descricao: string; gramas: number }[];
+    expect(medidas.length).toBeGreaterThanOrEqual(1);
+    for (const m of medidas) {
+      expect(m.gramas).toBeGreaterThan(0);
+      expect(m.descricao.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("contagem de alimentos com medidas é > 0 e <= 200 (guarda contra join explosivo/fuzzy)", () => {
+    const { total } = db
+      .prepare(
+        `SELECT COUNT(DISTINCT alimento_id) AS total FROM medida_caseira`,
+      )
+      .get() as { total: number };
+    expect(total).toBeGreaterThan(0);
+    expect(total).toBeLessThanOrEqual(200);
+    // aninhamento: nenhuma medida aponta para alimento inexistente
+    const orfas = db
+      .prepare(
+        `SELECT COUNT(*) AS total FROM medida_caseira m
+         LEFT JOIN alimento a ON a.id = m.alimento_id WHERE a.id IS NULL`,
+      )
+      .get() as { total: number };
+    expect(orfas.total).toBe(0);
   });
 
   it("valores especiais: vazio vira NULL e Tr (1e-05) vira 0", () => {
