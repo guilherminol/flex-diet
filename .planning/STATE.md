@@ -4,16 +4,16 @@ milestone: v1.0
 current_phase: 01
 current_phase_name: Núcleo confiável — banco, catálogo TACO e loop de registro com saldo
 status: executing
-stopped_at: Completed 01-02-PLAN.md
-last_updated: "2026-09-24T01:49:01.658Z"
+stopped_at: 01-04 checkpoint Task 3 (1º deploy VPS) aguardando confirmação humana — Tasks 1-2 completas
+last_updated: "2026-09-24T02:15:48.260Z"
 last_activity: 2026-09-23
 last_activity_desc: Phase 01 execution started
-state_head: aae661dd8c3c6a02f0d059352eea872091d67093
+state_head: ff0f69fcb9298f9ea6f7f8f2008db50d22f9e3ad
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 5
-  completed_plans: 2
+  completed_plans: 3
 ---
 
 # Project State
@@ -86,6 +86,7 @@ None yet.
 - Phase 1: era do SDK MCP suportada pelo Hermes a confirmar no primeiro contato (Streamable HTTP na VPS) (INFRA-01); VPS precisa de Docker + secrets de deploy configurados (INFRA-05)
 - Phase 4: contrato de mídia do Hermes (`msg.timestamp`, staging de arquivos) a confirmar durante a fase (CORPO-03)
 - Phase 5: contrato de `get_weekly_summary` (payload JSON) a acertar com o setup real do Hermes (RELAT-02)
+- 01-04 halted no checkpoint Task 3 (blocking-human): 1º deploy real na VPS aguardando humano — repo github.com/guilherminol/flex-diet NÃO existe (push falhou: Repository not found; SSH ok como guilherminol), secrets VPS_* não confirmados, VPS sem repo clonado/compose.env. Tasks 1-2 commitadas (4f9e32f, ff0f69f); ver 01-04-SUMMARY.md e 01-USER-SETUP.md
 
 ## Deferred Items
 
@@ -97,6 +98,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-24T01:48:46.836Z
-Stopped at: Completed 01-02-PLAN.md
-Resume file: None
+Last session: 2026-09-24T02:15:48.216Z
+Stopped at: 01-04 checkpoint Task 3 (1º deploy VPS) aguardando confirmação humana — Tasks 1-2 completas
+Resume file: .planning/phases/01-n-cleo-confi-vel-banco-cat-logo-taco-e-loop-de-registro-com/01-04-PLAN.md
