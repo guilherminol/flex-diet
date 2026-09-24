@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "csv-parse/sync";
+import { dobrarTexto, normalizarParaBusca } from "../../lib/texto.js";
 import type { Db } from "../connect.js";
 
 const DIR_SEED = dirname(fileURLToPath(import.meta.url));
@@ -42,18 +43,6 @@ export function numeroTaco(valor: string | undefined): number | null {
 }
 
 /**
- * Normaliza texto para comparação EXATA entre POF e TACO:
- * minúsculas + remove acentos (POF é MAIÚSCULA sem acento: "OLEO DE SOJA";
- * TACO tem acento: "Óleo, de soja"). Não é fuzzy — é igualdade exata pós-fold.
- */
-export function dobrarTexto(nome: string): string {
-  return nome
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-}
-
-/**
  * Nome-base de um alimento (qualquer dos dois datasets): remove qualificadores
  * entre parênteses (POF: "ARROZ (POLIDO, PARBOILIZADO)"), pega a parte antes
  * da primeira vírgula (TACO: "Banana, maçã, crua"), dobra e trima.
@@ -64,7 +53,7 @@ export function nomeBaseDe(nome: string): string {
   return dobrarTexto(semParenteses.split(",")[0]).trim();
 }
 
-/** Nome completo normalizado: sem parênteses, vírgulas → espaços, dobrado. */
+/** Nome completo SEM parênteses, dobrado — chave da passada 2 do join POF→TACO. */
 function nomeCompletoDe(nome: string): string {
   return dobrarTexto(
     nome
@@ -225,14 +214,15 @@ export function runSeed(db: Db): ResultadoSeed {
 
   const upsert = db.prepare(`
     INSERT INTO alimento (
-      fonte, numero_taco, nome,
+      fonte, numero_taco, nome, nome_busca,
       kcal_100g, proteina_g_100g, carbo_g_100g, gordura_g_100g, criado_em
     ) VALUES (
-      'taco', @numero_taco, @nome,
+      'taco', @numero_taco, @nome, @nome_busca,
       @kcal, @proteina, @carbo, @gordura, @criado_em
     )
     ON CONFLICT (fonte, numero_taco) DO UPDATE SET
       nome = excluded.nome,
+      nome_busca = excluded.nome_busca,
       kcal_100g = excluded.kcal_100g,
       proteina_g_100g = excluded.proteina_g_100g,
       carbo_g_100g = excluded.carbo_g_100g,
@@ -265,6 +255,7 @@ export function runSeed(db: Db): ResultadoSeed {
       upsert.run({
         numero_taco: numero,
         nome,
+        nome_busca: normalizarParaBusca(nome),
         kcal: numeroTaco(linha.energia_kcal),
         proteina: numeroTaco(linha.proteina_g),
         carbo: numeroTaco(linha.carboidrato_g),

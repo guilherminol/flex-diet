@@ -107,6 +107,19 @@ describe("seed TACO (ALIM-01)", () => {
     expect(orfas.total).toBe(0);
   });
 
+  it("nome_busca é preenchido acento-insensível (busca 'oleo' acha 'Óleo, de soja')", () => {
+    const linha = db
+      .prepare(`SELECT nome_busca FROM alimento WHERE numero_taco = '272'`)
+      .get() as { nome_busca: string | null };
+    expect(linha.nome_busca).toBe("oleo de soja");
+    const nulos = db
+      .prepare(
+        `SELECT COUNT(*) AS total FROM alimento WHERE nome_busca IS NULL OR nome_busca = ''`,
+      )
+      .get() as { total: number };
+    expect(nulos.total).toBe(0);
+  });
+
   it("valores especiais: vazio vira NULL e Tr (1e-05) vira 0", () => {
     // o colesterol do arroz (5) vem vazio no CSV → NULL (não analisado)
     const arroz = db
