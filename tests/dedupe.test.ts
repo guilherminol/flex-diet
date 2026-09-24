@@ -132,8 +132,13 @@ describe("registrarRefeicao — dedupe com janela de 10 min (REG-06, D-07/D-08)"
     const itens = [{ alimento_id: idArroz, gramas: 250 }];
     const { registro } = registrarRefeicao(db, { itens, data: "2026-09-21" });
     const linha = db
-      .prepare(`SELECT dedupe_hash, data_local FROM refeicao WHERE id_curto = ?`)
-      .get(registro.id_curto) as { dedupe_hash: string | null; data_local: string };
+      .prepare(
+        `SELECT dedupe_hash, data_local FROM refeicao WHERE id_curto = ?`,
+      )
+      .get(registro.id_curto) as {
+      dedupe_hash: string | null;
+      data_local: string;
+    };
     expect(linha.data_local).toBe("2026-09-21");
     expect(linha.dedupe_hash).toBe(dedupeHash("2026-09-21", itens));
   });
