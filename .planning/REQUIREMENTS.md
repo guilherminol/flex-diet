@@ -11,10 +11,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **REG-01**: User registra o que comeu por mensagem em linguagem natural ("almocei arroz, feijão e frango") e a refeição é logada com os macros debitados
 - [x] **REG-02**: Todo registro responde com o saldo restante do dia (calorias, proteína, carbo, gordura) junto dos itens debitados + gramas + fonte (TACO / Open Food Facts / estimativa)
-- [ ] **REG-03**: User pode editar ou remover um registro feito, por mensagem
-- [ ] **REG-04**: User pode repetir uma refeição de dia anterior ("repetir almoço de ontem")
+- [x] **REG-03**: User pode editar ou remover um registro feito, por mensagem
+- [x] **REG-04**: User pode repetir uma refeição de dia anterior ("repetir almoço de ontem")
 - [x] **REG-05**: Registro retroativo ("ontem jantei X") cai no dia correto
-- [ ] **REG-06**: Mensagem repetida/reenviada (retry do canal) não duplica registro (idempotência)
+- [x] **REG-06**: Mensagem repetida/reenviada (retry do canal) não duplica registro (idempotência)
 
 ### Catálogo de Alimentos
 
@@ -109,10 +109,10 @@ Which phases cover which requirements. Updated during roadmap creation (2026-09-
 |-------------|-------|--------|
 | REG-01 | Phase 1 | Complete |
 | REG-02 | Phase 1 | Complete |
-| REG-03 | Phase 1 | Pending |
-| REG-04 | Phase 1 | Pending |
+| REG-03 | Phase 1 | Complete |
+| REG-04 | Phase 1 | Complete |
 | REG-05 | Phase 1 | Complete |
-| REG-06 | Phase 1 | Pending |
+| REG-06 | Phase 1 | Complete |
 | ALIM-01 | Phase 1 | Complete |
 | ALIM-06 | Phase 1 | Complete |
 | META-01 | Phase 1 | Complete |

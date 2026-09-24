@@ -4,16 +4,16 @@ milestone: v1.0
 current_phase: 01
 current_phase_name: Núcleo confiável — banco, catálogo TACO e loop de registro com saldo
 status: executing
-stopped_at: 01-04 checkpoint Task 3 (1º deploy VPS) aguardando confirmação humana — Tasks 1-2 completas
-last_updated: "2026-09-24T02:15:48.260Z"
+stopped_at: Completed 01-03-PLAN.md
+last_updated: "2026-09-24T02:47:23.089Z"
 last_activity: 2026-09-23
 last_activity_desc: Phase 01 execution started
-state_head: ff0f69fcb9298f9ea6f7f8f2008db50d22f9e3ad
+state_head: 53698ecbc225951d1a248329460eaa8a07a100f2
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 5
-  completed_plans: 3
+  completed_plans: 4
 ---
 
 # Project State
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (atualizado 2026-09-23)
 ## Current Position
 
 Phase: 01 (Núcleo confiável — banco, catálogo TACO e loop de registro com saldo) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 Status: Ready to execute
 Last activity: 2026-09-23 — Phase 01 execution started
 
@@ -60,6 +60,7 @@ Progress: [░░░░░░░░░░] 0%
 |------|----------|-------|-------|
 | Phase 01 P01 | 42 min | 2 tasks | 27 files |
 | Phase 01 P02 | 24 min | 2 tasks | 10 files |
+| Phase 01 P03 | 24 min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -75,6 +76,9 @@ Decisões registradas na tabela Key Decisions do PROJECT.md. Recentes, que afeta
 - [Phase 01]: Conexao SQLite exposta as tools via holder setDb/getDb em db/connect.ts — McpServerFactory stateless nao carrega argumentos; holder mantem 1 conexao WAL por processo
 - [Phase 01]: Join POF→TACO no seed em 2 passadas EXATAS (nome-base único + nome completo normalizado) com guarda de unicidade dos dois lados — O algoritmo de passada única do plan excluía Óleo de soja (base óleo tem 6 TACOs); 92 alimentos com medidas (724 linhas), resto fica medidas_caseiras: [] por contrato (D-04)
 - [Phase 01]: Busca de alimentos acento-insensível via coluna alimento.nome_busca (migration 002) preenchida pelo seed com normalizarParaBusca (lib/texto.ts) — lower() do SQLite é ASCII-only e 'óleo'/'açaí' são alimentos comuns do domínio; mesma normalização no termo e na coluna, 100% parametrizado
+- [Phase 01]: Janela de dedupe por cutoff ISO-UTC parametrizado (nao datetime('now') do SQLite — comparacao lexicografica vazaria no mesmo dia)
+- [Phase 01]: editarRegistro recalcula dedupe_hash da linha (hash sempre reflete o conteudo); refeicao_ambigua para qualquer seletor com >1 candidato — nunca escolha silenciosa
+- [Phase 01]: repetirRefeicao reusa registrarRefeicao (validacao/snapshot/id_curto/dedupe num lugar so); repetir 2x o mesmo payload no mesmo dia dentro da janela deduplica de proposito
 
 ### Pending Todos
 
@@ -98,6 +102,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-24T02:15:48.216Z
-Stopped at: 01-04 checkpoint Task 3 (1º deploy VPS) aguardando confirmação humana — Tasks 1-2 completas
-Resume file: .planning/phases/01-n-cleo-confi-vel-banco-cat-logo-taco-e-loop-de-registro-com/01-04-PLAN.md
+Last session: 2026-09-24T02:47:23.029Z
+Stopped at: Completed 01-03-PLAN.md
+Resume file: None
