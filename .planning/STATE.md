@@ -4,11 +4,11 @@ milestone: v1.0
 current_phase: 01
 current_phase_name: Núcleo confiável — banco, catálogo TACO e loop de registro com saldo
 status: executing
-stopped_at: Completed 01-04-PLAN.md (1o deploy real verificado; INFRA-05 complete)
-last_updated: "2026-09-24T22:14:03.144Z"
+stopped_at: 01-05 halted no checkpoint Task 3 (1º contato Hermes) — Tasks 1-2 commitadas (f288c30 e2e cliente; ec2b360 fallback doc)
+last_updated: "2026-09-24T22:31:08.580Z"
 last_activity: 2026-09-23
 last_activity_desc: Phase 01 execution started
-state_head: 339c24e126d4006fd1ae067dbdd5540c0c1d3280
+state_head: ec2b360ae7d1b34023abee2d30e0e97164632cea
 progress:
   total_phases: 5
   completed_phases: 0
@@ -82,6 +82,8 @@ Decisões registradas na tabela Key Decisions do PROJECT.md. Recentes, que afeta
 - [Phase 01]: repetirRefeicao reusa registrarRefeicao (validacao/snapshot/id_curto/dedupe num lugar so); repetir 2x o mesmo payload no mesmo dia dentro da janela deduplica de proposito
 - [Phase 01]: 1o deploy real confirmado (INFRA-05): run 36065009857 verde com deploy EXECUTADO, healthz {ok:true} de fora em 177.7.44.211:8787, /mcp 401 — repo PUBLICO por decisao do usuario com scan de segredos (T-01-13 mitigado de outra forma)
 - [Phase 01]: healthcheck do compose falha com PUBLIC_HOST setado (allowedHosts rejeita Host 127.0.0.1 -> 403; fetch nao sobrescreve Host) — container (unhealthy) mas servico 100% funcional; fix de 1 linha deferido ao 01-05 (loopback no allowedHosts OU node:http com Host publico — provado 200)
+- [Phase 01]: Cliente MCP e2e prova o transporte sem Hermes: initialize → notifications/initialized → tools/list → tools/call sobre HTTP+Bearer; stateless confirmado (nenhum mcp-session-id emitido), protocolVersion 2025-06-18 negociada no initialize
+- [Phase 01]: Observado no e2e (dado para o checkpoint do Hermes): notifications/initialized responde 202 SEM corpo JSON — cliente real precisa tolerar corpo vazio; registrado no SUMMARY do 01-05
 
 ### Pending Todos
 
@@ -96,6 +98,7 @@ None yet.
 - ~~01-04 halted no checkpoint Task 3 (blocking-human)~~ **RESOLVIDO (2026-09-24):** usuário aprovou após setup externo (repo `guilherminol/flex-diet` criado público, secrets VPS_* registrados, VPS com clone + compose.env); run 36065009857 verde com deploy EXECUTADO, healthz `{"ok":true}` de fora (177.7.44.211:8787), /mcp 401 — INFRA-05 complete (ver 01-04-SUMMARY.md)
 - 01-05: healthcheck do compose marca container `(unhealthy)` (allowedHosts rejeita `Host: 127.0.0.1` com 403 quando PUBLIC_HOST setado; fetch não sobrescreve Host) — serviço 100% funcional (healthz 200 de fora, /mcp 401; node:http com Host público → 200 provado); fix de 1 linha a escolher no 01-05
 - 01-05: decisão de TLS/reverse proxy no checkpoint do Hermes (T-01-15 segue risco aceito: HTTP puro + token de alta entropia)
+- 01-05 aguarda checkpoint humano (blocking-human): 1º contato com o Hermes — config URL+Bearer no cliente, 3 perguntas do WhatsApp, era do protocolo p/ docs/sdk-v1-fallback.md; Tasks 1-2 commitadas (f288c30, ec2b360); VPS no ar (healthz 200, /mcp 401)
 
 ## Deferred Items
 
@@ -107,6 +110,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-24T22:14:03.004Z
-Stopped at: Completed 01-04-PLAN.md (1o deploy real verificado; INFRA-05 complete)
-Resume file: None
+Last session: 2026-09-24T22:30:33.314Z
+Stopped at: 01-05 halted no checkpoint Task 3 (1º contato Hermes) — Tasks 1-2 commitadas (f288c30 e2e cliente; ec2b360 fallback doc)
+Resume file: .planning/phases/01-n-cleo-confi-vel-banco-cat-logo-taco-e-loop-de-registro-com/01-05-PLAN.md
