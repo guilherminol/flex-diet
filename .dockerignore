@@ -1,0 +1,10 @@
+# A imagem não leva dados, segredos nem artefatos de dev
+node_modules
+data
+.git
+.planning
+.claude
+.github
+compose.env
+tests
+*.md
