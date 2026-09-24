@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import type { Server } from "node:http";
+import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import {
   createMcpExpressApp,
@@ -16,6 +17,7 @@ import {
   OAuthErrorCode,
 } from "@modelcontextprotocol/server";
 import type { NextFunction, Request, Response } from "express";
+import { agendarBackupDiario } from "./db/backup.js";
 import { connectDb, setDb } from "./db/connect.js";
 import { runMigrations } from "./db/migrate.js";
 import { runSeed } from "./db/seed/seed.js";
@@ -105,6 +107,17 @@ export async function startServer(
   if (!opcoes.skipSeed) {
     runSeed(db);
   }
+
+  // D-02: backup diário com retenção 7 — diretorio ao lado do banco
+  // (data/backups por padrão). Erro do backup NÃO derruba o serviço:
+  // agendarBackupDiario loga em stderr e segue.
+  const caminhoDb = resolve(
+    opcoes.dbPath ?? process.env.FLEXDIET_DB_PATH ?? "data/flexdiet.db",
+  );
+  agendarBackupDiario(
+    db,
+    opcoes.dirBackups ?? join(dirname(caminhoDb), "backups"),
+  );
 
   const app = criarApp();
   const port = opcoes.port ?? Number(process.env.PORT ?? 8787);
