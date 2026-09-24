@@ -4,16 +4,16 @@ milestone: v1.0
 current_phase: 01
 current_phase_name: Núcleo confiável — banco, catálogo TACO e loop de registro com saldo
 status: executing
-stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-09-23T22:52:28.852Z"
+stopped_at: Completed 01-02-PLAN.md
+last_updated: "2026-09-24T01:49:01.658Z"
 last_activity: 2026-09-23
 last_activity_desc: Phase 01 execution started
-state_head: de963e673425c9b63b0c148c489a530226f3ddee
+state_head: aae661dd8c3c6a02f0d059352eea872091d67093
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 5
-  completed_plans: 1
+  completed_plans: 2
 ---
 
 # Project State
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (atualizado 2026-09-23)
 ## Current Position
 
 Phase: 01 (Núcleo confiável — banco, catálogo TACO e loop de registro com saldo) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-09-23 — Phase 01 execution started
 
@@ -59,6 +59,7 @@ Progress: [░░░░░░░░░░] 0%
 | Plan | Duration | Tasks | Files |
 |------|----------|-------|-------|
 | Phase 01 P01 | 42 min | 2 tasks | 27 files |
+| Phase 01 P02 | 24 min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -72,6 +73,8 @@ Decisões registradas na tabela Key Decisions do PROJECT.md. Recentes, que afeta
 - [Phase 01]: SDK MCP v2 confirmado no install (npm view 2.1.0 + README oficial); sem fallback v1 — Legitimidade confirmada evita slopsquat; fallback v1 so se o Hermes negociar era anterior
 - [Phase 01]: obterMetasVigentes extraida para domain/metas.ts; saldo.ts consome — unica regra de vigencia — Exigencia do Task 2: evita duplicar a regra de vigencia entre saldo e metas
 - [Phase 01]: Conexao SQLite exposta as tools via holder setDb/getDb em db/connect.ts — McpServerFactory stateless nao carrega argumentos; holder mantem 1 conexao WAL por processo
+- [Phase 01]: Join POF→TACO no seed em 2 passadas EXATAS (nome-base único + nome completo normalizado) com guarda de unicidade dos dois lados — O algoritmo de passada única do plan excluía Óleo de soja (base óleo tem 6 TACOs); 92 alimentos com medidas (724 linhas), resto fica medidas_caseiras: [] por contrato (D-04)
+- [Phase 01]: Busca de alimentos acento-insensível via coluna alimento.nome_busca (migration 002) preenchida pelo seed com normalizarParaBusca (lib/texto.ts) — lower() do SQLite é ASCII-only e 'óleo'/'açaí' são alimentos comuns do domínio; mesma normalização no termo e na coluna, 100% parametrizado
 
 ### Pending Todos
 
@@ -94,6 +97,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-23T22:46:56.646Z
-Stopped at: Completed 01-01-PLAN.md
+Last session: 2026-09-24T01:48:46.836Z
+Stopped at: Completed 01-02-PLAN.md
 Resume file: None

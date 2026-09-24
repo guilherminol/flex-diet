@@ -37,16 +37,16 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. Ajustar as metas do dia por mensagem ("meta 1800kcal") muda o saldo restante imediatamente
   5. Fundação técnica verificável: servidor MCP exposto via Streamable HTTP na VPS e consumível pelo Hermes por URL com endpoints protegidos por token (era do SDK v2 vs v1 verificada no primeiro contato, com fallback documentado p/ v1), SQLite em WAL com migrations versionadas + backup automático antes de cada migration, datas gravadas como `timestamp_utc` + `data_local`, e deploy automático funcionando — merge na `main` publica a versão nova na VPS via GitHub Actions
 
-**Plans**: 0/5 plans executed
+**Plans**: 2/5 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 01-01-PLAN.md — Walking Skeleton: loop "registrei → saldo" end-to-end (HTTP MCP + token, SQLite WAL + migrations/backup, seed TACO, datas duplas, definir_metas)
+- [x] 01-01-PLAN.md — Walking Skeleton: loop "registrei → saldo" end-to-end (HTTP MCP + token, SQLite WAL + migrations/backup, seed TACO, datas duplas, definir_metas)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 01-02-PLAN.md — Catálogo: buscar_alimento com macros por 100g + medidas caseiras (join POF↔TACO inequívoco)
+- [x] 01-02-PLAN.md — Catálogo: buscar_alimento com macros por 100g + medidas caseiras (join POF↔TACO inequívoco)
 - [ ] 01-04-PLAN.md — Deploy contínuo: Docker/compose no contrato do deploy.yml, backup diário (D-02), 1º deploy real na VPS
 
 **Wave 3** *(blocked on Wave 2 completion)*
@@ -125,7 +125,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Núcleo confiável | 0/5 | Planned    |  |
+| 1. Núcleo confiável | 2/5 | In Progress|  |
 | 2. Open Food Facts + cache | 0/TBD | Not started | - |
 | 3. Rotina (fases, treinos, presets) | 0/TBD | Not started | - |
 | 4. Corpo (peso, medidas, fotos) | 0/TBD | Not started | - |

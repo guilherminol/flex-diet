@@ -23,7 +23,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **ALIM-03**: Consulta ao Open Food Facts por nome do produto
 - [ ] **ALIM-04**: Resultado de consulta externa é cacheado automaticamente no catálogo, com fonte e data da consulta
 - [ ] **ALIM-05**: Alimento fora do catálogo: Hermes estima os macros (rotulado como estimativa) e pode salvar o alimento no catálogo
-- [ ] **ALIM-06**: Busca de alimento retorna as equivalências de medidas caseiras em gramas (dados da TACO) para o Hermes declarar a premissa usada
+- [x] **ALIM-06**: Busca de alimento retorna as equivalências de medidas caseiras em gramas (dados da TACO) para o Hermes declarar a premissa usada
 
 ### Metas e Fases
 
@@ -114,7 +114,7 @@ Which phases cover which requirements. Updated during roadmap creation (2026-09-
 | REG-05 | Phase 1 | Complete |
 | REG-06 | Phase 1 | Pending |
 | ALIM-01 | Phase 1 | Complete |
-| ALIM-06 | Phase 1 | Pending |
+| ALIM-06 | Phase 1 | Complete |
 | META-01 | Phase 1 | Complete |
 | INFRA-01 | Phase 1 | Pending |
 | INFRA-02 | Phase 1 | Complete |
